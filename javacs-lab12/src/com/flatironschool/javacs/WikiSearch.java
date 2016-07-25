@@ -60,8 +60,18 @@ public class WikiSearch {
 	 * @return New WikiSearch object.
 	 */
 	public WikiSearch or(WikiSearch that) {
-        // FILL THIS IN!
-		return null;
+        //create a new hashmap w/ this map's terms 
+        Map<String, Integer> orMap = new HashMap<String, Integer>();
+        for(String thisTerm: this.map.keySet()){
+            orMap.put(thisTerm, this.map.get(thisTerm));
+        }
+        //for each term in the map passed in
+		for (String searchTerm: that.map.keySet()) {
+            //get the total relevance - add both relevances together 
+            orMap.put(searchTerm, totalRelevance(this.getRelevance(searchTerm), that.getRelevance(searchTerm)));
+        }
+        //return a WikiSearch object that gives the union
+		return new WikiSearch(orMap);
 	}
 	
 	/**
@@ -71,19 +81,30 @@ public class WikiSearch {
 	 * @return New WikiSearch object.
 	 */
 	public WikiSearch and(WikiSearch that) {
-        // FILL THIS IN!
-		return null;
+        //create a new hashmap w/ this map's terms 
+        Map<String, Integer> andMap = new HashMap<String, Integer>();
+        for(String thisTerm: this.map.keySet()){
+            if(that.map.containsKey(thisTerm)){
+                andMap.put(thisTerm, totalRelevance(this.getRelevance(thisTerm), that.getRelevance(thisTerm)));
+            }
+        }
+        return new WikiSearch(andMap);
 	}
 	
 	/**
-	 * Computes the intersection of two search results.
+	 * Computes the difference of two search results.
 	 * 
 	 * @param that
 	 * @return New WikiSearch object.
 	 */
 	public WikiSearch minus(WikiSearch that) {
-        // FILL THIS IN!
-		return null;
+        Map<String, Integer> minusMap = new HashMap<String, Integer>();
+        for(String thisTerm: this.map.keySet()){
+            if(!that.map.containsKey(thisTerm)){
+                minusMap.put(thisTerm, this.getRelevance(thisTerm));
+            }
+        }
+        return new WikiSearch(minusMap);
 	}
 	
 	/**
@@ -104,9 +125,23 @@ public class WikiSearch {
 	 * @return List of entries with URL and relevance.
 	 */
 	public List<Entry<String, Integer>> sort() {
-        // FILL THIS IN!
-		return null;
+		// make a list of entries; map.entrySet() returns a key-value pair
+		List<Entry<String, Integer>> entries = new LinkedList<Entry<String, Integer>>(map.entrySet());
+		
+		// following syntax as shown in example; create a comparator object
+		Comparator<Entry<String, Integer>> comparator = new Comparator<Entry<String, Integer>>() {
+            //compare two entries
+            public int compare(Entry<String, Integer> entry1, Entry<String, Integer> entry2) {
+                //get the relevance of each entry (the value)
+                return entry1.getValue().compareTo(entry2.getValue());
+            }
+        };
+        
+        //use collections.sort to sort the entries
+		Collections.sort(entries, comparator);
+		return entries;
 	}
+
 
 	/**
 	 * Performs a search and makes a WikiSearch object.
